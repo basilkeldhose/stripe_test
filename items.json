@@ -43,5 +43,18 @@
                 "imageName":"Cofee.png"
             }
     ]
-}
-
+},
+{"newproduct":[{
+  _id: 5fa3d4a048eec375898762a8,
+  name: 'pant',
+  price: 2500,
+  image_URL: 'nothing',
+  __v: 0
+}]
+[{
+  _id: 5fa3d4a048eec375898762a8,
+  name: 'pant',
+  price: 2500,
+  image_URL: 'nothing',
+  __v: 0
+}]
