@@ -12,8 +12,8 @@ const Products = mongoose.model('products')
 
 const { check, validationResult } = require("express-validator");
 const { json } = require('body-parser');
-const stripe = require('stripe')('secret_key');
-const stripePublicKey ="public_key"
+const stripe = require('stripe')('sk_test_51Hh7GSDCUMC8SpWDMjJOEKTcIfwfLVlKQxGaPqvuMiMxF1vwFhrTu6tJBtyOERwUfq5Ks9uckfKDgNSw4ZATEp1A00bJ7K2VaH');
+const stripePublicKey ="pk_test_51Hh7GSDCUMC8SpWD4K3SgUdlvMaLjSgyI3v4gmjZl5krco2Eph4NKuJvR1qJKkvFK1za7I9kOJHvdmqmkuhhDjF400o1hTiWTL"
 // DB CONFIG
 const connection_Url = 'mongodb+srv://admin:XXpJ0kIxku72aaZd@cluster0.vtn35.mongodb.net/stripe-api?retryWrites=true&w=majority'
 
