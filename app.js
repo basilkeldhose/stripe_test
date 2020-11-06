@@ -1,21 +1,112 @@
-
-if (process.env.NODE_ENV !== 'production') {
-    require('dotenv')
-}
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY
-const stripePublicKey = process.env.STRIPE_PUBLIC_KEY
-
-console.log(stripePublicKey, stripeSecretKey)
-
 const express = require('express')
 const app = express();
 const fs = require('fs')
-const { json } = require('body-parser')
-const stripe =require('stripe')(stripeSecretKey)
+const path = require('path')
+const bodyParser = require("body-parser")
+const mongoose = require('mongoose')
+require('./dbSeller')
+require('./dbproduct')
+const Sellers = mongoose.model('sellers')
+const Products = mongoose.model('products')
+const { check, validationResult } = require("express-validator");
+const { json } = require('body-parser');
+const { resolve } = require('path');
+const { rejects } = require('assert');
+const stripe = require('stripe')('sk_test_51Hh7GSDCUMC8SpWDMjJOEKTcIfwfLVlKQxGaPqvuMiMxF1vwFhrTu6tJBtyOERwUfq5Ks9uckfKDgNSw4ZATEp1A00bJ7K2VaH');
+
+
+const connection_Url = 'mongodb+srv://admin:XXpJ0kIxku72aaZd@cluster0.vtn35.mongodb.net/stripe-api?retryWrites=true&w=majority'
 
 app.use(express.json());
-app.set('view engine', 'ejs')
 app.use(express.static('public'))
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs')
+const urlencodedParser = bodyParser.urlencoded({ extended: false })
+
+
+app.get('/sellers', (req, res) => {
+    res.render('seller')
+})
+
+// DB CONFIG
+
+mongoose.connect(connection_Url, {
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useUnifiedTopology: true
+})
+
+// API CONFIG
+app.post('/seller', urlencodedParser, [
+    check('name', 'this name must be 3+ charecter')
+        .exists()
+        .isLength({ min: 3 }),
+    check('email', 'Email is not valied')
+        .isEmail()
+        .normalizeEmail()], (req, res) => {
+            const seller = new Sellers()
+            seller.name = req.body.name
+            seller.email = req.body.email
+            seller.description = req.body.description
+            Sellers.create(seller, (err, data) => {
+                if (err) {
+                    res.status(500).send(err)
+                }
+                else {
+                    res.status(201).send(data);
+                    var params = req.body
+                    stripe.customers.create(params, (err, customer) => {
+                        if (err) {
+                            console.log(err)
+                        }
+                        if (customer) {
+                            console.log("success" + customer)
+                        }
+                        else {
+                            console.log("something wrong")
+                        }
+                    })
+                }
+            })
+        });
+
+app.post('/product', (req, res) => {
+    const product = new Products()
+    product.name = req.body.name
+    product.price = req.body.price
+    product.image_URL = req.body.image_URL
+    Products.create(product, (err,data) => {
+        if (err) {
+            res.status(500).send(err)
+        }
+        else {
+            res.status(201).send(data)
+            
+                }
+            })
+        
+});
+app.get("/product", (req, res) => {
+    Products.find((err, data) => {
+        if (err) {
+            res.status(500).send(err);
+
+        }
+        else {
+            res.status(200).send(data);
+            fs.writeFile('products.json', data, (err) => {
+                if (err) {
+                    console.log(err)
+                }
+                else {
+                    console.log(data)
+                }
+            })
+        }
+    })
+})
+
+// STRIPE API 
 
 app.get('/store', (req, res) => {
     fs.readFile('items.json', (error, data) => {
@@ -29,34 +120,35 @@ app.get('/store', (req, res) => {
         }
     })
 });
+
 app.post('/purchase', (req, res) => {
     fs.readFile('items.json', (error, data) => {
         if (error) {
             res.status(500).end()
         } else {
-            const itemsJson =JSON.parse(data)
-            const itemArray =itemsJson.music.connect(itemsJson.merch)
-            let total =0
-            req.body.items.forEach((items)=>{
-                const itemsJson =itemArray.find((i)=>{
-                    return i.id == item.id
+            const itemsJson = JSON.parse(data)
+            const itemArray = itemsJson.music.connect(itemsJson.merch)
+            let total = 0
+            req.body.items.forEach((item) => {
+                const itemsJson = itemArray.find((i) => {
+                    return item.id == item.id
                 })
-                total =total+ itemsJson.price*item.quantity
+                total = total + itemsJson.price * item.quantity
             })
             stripe.charges.create({
-                amount:total,
-                source:req.body.stripeTokenId,
-                currency:'usd'
-            }).then(()=>{
+                amount: total,
+                source: req.body.stripeTokenId,
+                currency: 'usd'
+            }).then(() => {
                 console.log("charge sucessfully")
-                json.send({message:"sucessfully purchased items... "})
-            }).cath(()=>{
+                json.send({ message: "sucessfully purchased items... " })
+            }).cath(() => {
                 console.log("charge failed")
                 res.status(500).end()
             })
         }
     })
-})
+ })
 app.listen(8001, () => {
     console.log('server is connected on port in 8001..!!!');
-})
+});

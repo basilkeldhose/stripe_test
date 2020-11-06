@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>product</title>
+</head>
+<body>
+    <form action="/product" id="product" method="POST">
+          <label for="name">Product Name</label>
+          <input type="test" class="form-control" id="name">
+          <label for="price">Price</label>
+          <input type="test" class="form-control" id="price">
+          <label for="price">Image URL</label>
+          <input type="file" class="form-control" id="image_URL">
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+
+      <script>
+          const productForm =document.querySelector('product')
+          productForm.addEventListener('submit',(e)=>{
+            e.preventDefault();
+                let formData =new FormData(sellerForm)
+    
+            let formOblect ={
+                name:document.getElementById('name').value,
+                price:document.getElementById('price').value,
+                image_url:document.getElementById('image_URL').value
+            }
+           
+        axios.post('/product',formOblect).then((res)=>{
+          console.log(res.data)
+         }).catch((err)=>{
+            console.log(err)
+         })
+             console.log(formOblect)
+    })
+        
+      </script>
+</body>
+</html>
