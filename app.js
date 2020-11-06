@@ -13,7 +13,7 @@ const Products = mongoose.model('products')
 const { check, validationResult } = require("express-validator");
 const { json } = require('body-parser');
 const stripe = require('stripe')('secret_key');
-const stripePublicKey ="Public_key"
+const stripePublicKey ="public_key"
 // DB CONFIG
 const connection_Url = 'mongodb+srv://admin:XXpJ0kIxku72aaZd@cluster0.vtn35.mongodb.net/stripe-api?retryWrites=true&w=majority'
 
@@ -29,12 +29,15 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 app.get('/', (req, res) => {
     res.render('index')
-})
+});
 app.get('/seller', (req, res) => {
     res.render('seller')
-})
+});
+
 const urlencodedParser = bodyParser.urlencoded({ extended: false })
+
 // API CONFIG
+
 app.post('/seller', urlencodedParser, [
     check('name', 'this name must be 3+ charecter')
         .exists()
@@ -48,7 +51,7 @@ app.post('/seller', urlencodedParser, [
         const alert = error.array()
         res.render('seller', {
             alert
-        })
+        });
     }
     const seller = new Sellers()
     seller.name = req.body.name
@@ -71,9 +74,9 @@ app.post('/seller', urlencodedParser, [
                 else {
                     console.log("something wrong")
                 }
-            })
+            });
         }
-    })
+    });
 });
 
 app.post('/product', (req, res) => {
@@ -89,8 +92,9 @@ app.post('/product', (req, res) => {
             res.status(201).send(data)
 
         }
-    })
+    });
 });
+
 app.get("/product", (req, res) => {
     Products.find((err, data) => {
         if (err) {
@@ -105,10 +109,10 @@ app.get("/product", (req, res) => {
                 else {
                     console.log(data)
                 }
-            })
+            });
         }
-    })
-})
+    });
+});
 
 app.get('/store', (req, res) => {
     fs.readFile('items.json', (error, data) => {
@@ -118,9 +122,9 @@ app.get('/store', (req, res) => {
             res.render('store', {
                 stripePublicKey: stripePublicKey,
                 items: JSON.parse(data)
-            })
+            });
         }
-    })
+    });
 });
 
 app.post('/purchase', (req, res) => {
@@ -134,9 +138,9 @@ app.post('/purchase', (req, res) => {
             req.body.items.forEach((item) => {
                 const itemsJson = itemArray.find((i) => {
                     return item.id == item.id
-                })
+                });
                 total = total + itemsJson.price * item.quantity
-            })
+            });
             stripe.charges.create({
                 amount: total,
                 source: req.body.stripeTokenId,
@@ -147,10 +151,10 @@ app.post('/purchase', (req, res) => {
             }).cath(() => {
                 console.log("charge failed")
                 res.status(500).end()
-            })
-        }
-    })
-})
+            });
+        };
+    });
+});
 
 app.listen(8001, () => {
     console.log('server is connected on port in 8001..!!!');
