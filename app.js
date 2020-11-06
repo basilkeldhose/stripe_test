@@ -10,8 +10,6 @@ const Sellers = mongoose.model('sellers')
 const Products = mongoose.model('products')
 const { check, validationResult } = require("express-validator");
 const { json } = require('body-parser');
-const { resolve } = require('path');
-const { rejects } = require('assert');
 const stripe = require('stripe')('sk_test_51Hh7GSDCUMC8SpWDMjJOEKTcIfwfLVlKQxGaPqvuMiMxF1vwFhrTu6tJBtyOERwUfq5Ks9uckfKDgNSw4ZATEp1A00bJ7K2VaH');
 
 
@@ -43,7 +41,15 @@ app.post('/seller', urlencodedParser, [
         .isLength({ min: 3 }),
     check('email', 'Email is not valied')
         .isEmail()
-        .normalizeEmail()], (req, res) => {
+        .normalizeEmail()
+    ], (req, res) => {
+        const error = validationResult(req)
+        if(error.isEmpty()){
+            const alert =error.array()
+            res.render('seller',{
+                alert
+            })
+        }
             const seller = new Sellers()
             seller.name = req.body.name
             seller.email = req.body.email
@@ -69,6 +75,7 @@ app.post('/seller', urlencodedParser, [
                 }
             })
         });
+
 
 app.post('/product', (req, res) => {
     const product = new Products()
