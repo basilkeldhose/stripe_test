@@ -11,7 +11,7 @@ const Products = mongoose.model('products');
 const { check, validationResult } = require("express-validator");
 const { json } = require('body-parser');
 const stripe = require('stripe')('sk_test_51Hh7GSDCUMC8SpWDMjJOEKTcIfwfLVlKQxGaPqvuMiMxF1vwFhrTu6tJBtyOERwUfq5Ks9uckfKDgNSw4ZATEp1A00bJ7K2VaH');
-const stripePublicKey ="pk_test_51Hh7GSDCUMC8SpWD4K3SgUdlvMaLjSgyI3v4gmjZl5krco2Eph4NKuJvR1qJKkvFK1za7I9kOJHvdmqmkuhhDjF400o1hTiWTL"
+const stripePublicKey = "pk_test_51Hh7GSDCUMC8SpWD4K3SgUdlvMaLjSgyI3v4gmjZl5krco2Eph4NKuJvR1qJKkvFK1za7I9kOJHvdmqmkuhhDjF400o1hTiWTL"
 const connection_Url = 'mongodb+srv://admin:XXpJ0kIxku72aaZd@cluster0.vtn35.mongodb.net/stripe-api?retryWrites=true&w=majority'
 mongoose.connect(connection_Url, {
     useNewUrlParser: true,
@@ -60,82 +60,82 @@ app.post('/seller', urlencodedParser, [
                         if (customer) {
                             console.log("success" + customer);
                         } else {
-                             console.log("something wrong");
-                            }
-                        });
-                    }
-                    seller.email = req.body.email;
+                            console.log("something wrong");
+                        }
+                    });
+                }
+                seller.email = req.body.email;
+            });
+        });
+app.post('/product', (req, res) => {
+    const product = new Products()
+    product.name = req.body.name
+    product.price = req.body.price
+    product.image_URL = req.body.image_URL
+    Products.create(product, (err, data) => {
+        if (err) {
+            res.status(500).send(err);
+        } else {
+            res.status(201).send(data);
+        }
+    });
+});
+app.get("/product", (req, res) => {
+    Products.find((err, data) => {
+        if (err) {
+            res.status(500).send(err);
+        } else {
+            res.status(200).send(data);
+            fs.appendFile('items.json', `[${data}]`, (err) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log(data);
+                }
+            });
+        }
+    });
+});
+app.get('/store', (req, res) => {
+    fs.readFile('items.json', (error, data) => {
+        if (error) {
+            res.status(500).end();
+        } else {
+            res.render('store', {
+                stripePublicKey: stripePublicKey,
+                items: JSON.parse(data)
+            });
+        }
+    });
+});
+app.post('/purchase', (req, res) => {
+    fs.readFile('items.json', (error, data) => {
+        if (error) {
+            res.status(500).end();
+        } else {
+            const itemsJson = JSON.parse(data)
+            const itemArray = itemsJson.music.connect(itemsJson.merch)
+            let total = 0
+            req.body.items.forEach((item) => {
+                const itemsJson = itemArray.find((i) => {
+                    return item.id == item.id;
                 });
+                total = total + itemsJson.price * item.quantity;
             });
-            app.post('/product', (req, res) => {
-                const product = new Products()
-                product.name = req.body.name
-                product.price = req.body.price
-                product.image_URL = req.body.image_URL
-                Products.create(product, (err, data) => {
-                    if (err) {
-                        res.status(500).send(err);
-                    } else {
-                        res.status(201).send(data);
-                    }
-                });
+            stripe.charges.create({
+                amount: total,
+                source: req.body.stripeTokenId,
+                currency: 'usd'
+            }).then(() => {
+                console.log("charge sucessfully")
+                json.send({ message: "sucessfully purchased items... " })
+            }).cath(() => {
+                console.log("charge failed")
+                res.status(500).end()
             });
-            app.get("/product", (req, res) => {
-                Products.find((err, data) => {
-                    if (err) {
-                        res.status(500).send(err);
-                    } else {
-                        res.status(200).send(data);
-                        fs.appendFile('items.json',`[${data}]`, (err) => {
-                            if (err) {
-                                console.log(err);
-                            } else {
-                                console.log(data);
-                            }
-                        });
-                    }
-                });
-            });
-            app.get('/store', (req, res) => {
-                fs.readFile('items.json', (error, data) => {
-                    if (error) {
-                        res.status(500).end();
-                    } else {
-                        res.render('store', {
-                            stripePublicKey: stripePublicKey,
-                            items: JSON.parse(data)
-                        });
-                    }
-                });
-            });
-            app.post('/purchase', (req, res) => {
-                fs.readFile('items.json', (error, data) => {
-                    if (error) {
-                        res.status(500).end();
-                    } else {
-                        const itemsJson = JSON.parse(data)
-                        const itemArray = itemsJson.music.connect(itemsJson.merch)
-                        let total = 0
-                        req.body.items.forEach((item) => {
-                            const itemsJson = itemArray.find((i) => {
-                                return item.id == item.id;
-                            });
-                            total = total + itemsJson.price * item.quantity;
-                        });
-                        stripe.charges.create({
-                            amount: total,
-                            source: req.body.stripeTokenId,
-                            currency: 'usd'
-                        }).then(() => {
-                            console.log("charge sucessfully")
-                            json.send({ message: "sucessfully purchased items... " })
-                        }).cath(() => {
-                            console.log("charge failed")
-                            res.status(500).end()
-                        });
-                    };
-                });
-            });
-            app.listen(8001, () => {
-                console.log('server is connected on port in 8001..!!!');
-            });
+        };
+    });
+});
+app.listen(8001, () => {
+    console.log('server is connected on port in 8001..!!!');
+});
