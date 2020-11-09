@@ -73,11 +73,7 @@ app.post('/product', (req, res) => {
     product.price = req.body.price
     product.image_URL = req.body.image_URL
     Products.create(product, (err, data) => {
-        if (err) {
-            res.status(500).send(err);
-        } else {
-            res.status(201).send(data);
-        }
+        return err ? res.status(500).send(err) : res.status(201).send(data);
     });
 });
 app.get("/product", (req, res) => {
@@ -87,11 +83,7 @@ app.get("/product", (req, res) => {
         } else {
             res.status(200).send(data);
             fs.appendFile('items.json', `[${data}]`, (err) => {
-                if (err) {
-                    console.log(err);
-                } else {
-                    console.log(data);
-                }
+                return err ? console.log(err) : console.log(data);
             });
         }
     });
