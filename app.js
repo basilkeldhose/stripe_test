@@ -54,14 +54,7 @@ app.post('/seller', urlencodedParser, [
                     res.status(201).send(data);
                     var params = req.body
                     stripe.customers.create(params, (err, customer) => {
-                        if (err) {
-                            console.log(err);
-                        }
-                        if (customer) {
-                            console.log("success" + customer);
-                        } else {
-                            console.log("something wrong");
-                        }
+                        return err ? console.log(err) : console.log("sucess"+ customer);
                     });
                 }
                 seller.email = req.body.email;
@@ -119,11 +112,11 @@ app.post('/purchase', (req, res) => {
                 source: req.body.stripeTokenId,
                 currency: 'usd'
             }).then(() => {
-                console.log("charge sucessfully")
-                json.send({ message: "sucessfully purchased items... " })
+                console.log("charge sucessfully");
+                json.send({ message: "sucessfully purchased items... " });
             }).cath(() => {
                 console.log("charge failed")
-                res.status(500).end()
+                res.status(500).end();
             });
         };
     });
