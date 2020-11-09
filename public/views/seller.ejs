@@ -19,7 +19,7 @@
                         <%= error.msg %> 
                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
-                          </button>
+                        </button>
                     </div>
                 <% }) %> 
             <% } %> 
@@ -38,24 +38,21 @@
         </div>
         <script>
          import {axios} from 'axios'
-
-        const sellerForm = document.querySelector('#seller')
-            sellerForm.addEventListener('submit',(e)=>{
-                e.preventDefault();
-                let formData =new FormData(sellerForm)
-    
-            let formOblect ={
-                name:document.getElementById('name').value,
-                email:document.getElementById('email').value
-            }
-            
-        axios.post('/seller',formOblect).then((res)=>{
-          console.log(res.data)
-         }).catch((err)=>{
-            console.log(err)
-         })
-             console.log(formOblect)
-    })
+         const sellerForm = document.querySelector('#seller')
+         sellerForm.addEventListener('submit',(e)=>{
+             e.preventDefault();
+             let formData =new FormData(sellerForm)
+             let formOblect ={
+                 name:document.getElementById('name').value,
+                 email:document.getElementById('email').value
+                }
+                axios.post('/seller',formOblect).then((res)=>{
+                    console.log(res.data)
+                }).catch((err)=>{
+                    console.log(err)
+                })
+                console.log(formOblect)
+            })
         </script>
     </body>
 </html>
